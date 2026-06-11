@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>Калькулятор пенсии за выслугу лет</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(135deg, #e9eef3 0%, #d4dfe9 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .main-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .main-header h1 {
+            font-size: 2.2rem;
+            color: #0b3b5f;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .main-header .sub {
+            color: #2c4c6e;
+            font-size: 1rem;
+            border-bottom: 2px solid #bdc7d6;
+            display: inline-block;
+            padding-bottom: 8px;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: white;
+            border: none;
+            padding: 14px 32px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            color: #2c5a7a;
+        }
+
+        .tab-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #1e5a7d, #0f3b52);
+            color: white;
+            box-shadow: 0 8px 18px rgba(28,90,125,0.3);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 28px;
+            box-shadow: 0 20px 35px -12px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.5rem 2rem;
+            color: white;
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        .card-header.civil {
+            background: linear-gradient(135deg, #1e5a7d, #0f3b52);
+        }
+
+        .card-header.military {
+            background: linear-gradient(135deg, #2d5a2b, #1e3a1c);
+        }
+
+        .card-body {
+            padding: 2rem;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1e4663;
+            margin: 1.5rem 0 1rem 0;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        .section-title:first-of-type {
+            margin-top: 0;
+        }
+
+        .input-group {
+            margin-bottom: 1.2rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            font-size: 0.9rem;
+            color: #2c3e4e;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            border: 1px solid #cbd5e1;
+            border-radius: 1rem;
+            background: #fefefe;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: #2c6e9e;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(44,110,158,0.15);
+        }
+
+        .hint {
+            font-size: 0.8rem;
+            color: #6c7e9e;
+            margin-top: 0.25rem;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .radio-group label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: normal;
+            cursor: pointer;
+            font-size: 0.95rem;
+        }
+
+        .result {
+            background: linear-gradient(135deg, #eef2f9 0%, #e6edf6 100%);
+            border-radius: 1.5rem;
+            padding: 1.5rem;
+            margin: 1.5rem 0 1rem;
+            text-align: center;
+            border-left: 6px solid #f4c542;
+        }
+
+        .result-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #2c5a7a;
+        }
+
+        .result-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #1e4663;
+            line-height: 1.2;
+            font-family: 'Courier New', monospace;
+        }
+
+        .result-sub {
+            font-size: 0.85rem;
+            color: #4a627a;
+            margin-top: 8px;
+        }
+
+        .info-block {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            background: #f8f9fc;
+            padding: 1rem;
+            border-radius: 1rem;
+            border-left: 4px solid #8ba0bc;
+            line-height: 1.5;
+        }
+
+        .fun-fact {
+            margin-top: 0.8rem;
+            background: #eef5e8;
+            padding: 0.9rem;
+            border-radius: 1rem;
+            border-left: 4px solid #6fbf4c;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        button {
+            background: #f4c542;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 40px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #e0b03b;
+            transform: scale(0.98);
+        }
+
+        .two-columns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.2rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            font-size: 0.85rem;
+            color: #5b6e8c;
+            border-top: 1px solid #cbd5e1;
+            padding-top: 1.5rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background: #f0f6fe;
+            border-radius: 1rem;
+        }
+
+        .checkbox-group input {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        @media (max-width: 900px) {
+            .two-columns {
+                grid-template-columns: 1fr;
+            }
+            .card-body {
+                padding: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="main-header">
+        <h1>⚖️ Калькулятор пенсии за выслугу лет</h1>
+        <div class="sub">Точный расчёт в рублях и копейках</div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" onclick="switchTab('civil')">🏛️ Государственные служащие</button>
+        <button class="tab-btn" onclick="switchTab('military')">⭐ Военные и правоохранители</button>
+    </div>
+
+    <!-- ======================= ВКЛАДКА ГОСУДАРСТВЕННЫЕ СЛУЖАЩИЕ ======================= -->
+    <div id="civilTab" class="tab-content active">
+        <div class="card">
+            <div class="card-header civil">📑 Федеральный государственный гражданский служащий (ФГГС)</div>
+            <div class="card-body">
+                <div class="section-title">📌 Основание для назначения пенсии за выслугу лет</div>
+                <div class="radio-group" id="civilBaseGroup">
+                    <label><input type="radio" name="civil_base" value="main" checked> Общее правило (ст.7 п.1 ФЗ №79-ФЗ)</label>
+                    <label><input type="radio" name="civil_base" value="exception"> Исключение (п.3 ч.1 ст.33 ФЗ №79-ФЗ — собственное желание)</label>
+                </div>
+
+                <div class="section-title">📊 Данные для расчёта</div>
+                <div class="two-columns">
+                    <div class="input-group">
+                        <label>📅 Стаж государственной гражданской службы (лет)</label>
+                        <input type="number" id="civil_stazh_ggs" value="20" step="0.01">
+                        <div class="hint">Общее правило: ≥20 лет. Исключение: ≥25 лет</div>
+                    </div>
+                    <div class="input-group">
+                        <label>🏛️ Стаж федеральной государственной службы</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="civil_fed_years" value="6" step="1" min="0" placeholder="лет" style="width: 50%;">
+                            <input type="number" id="civil_fed_months" value="6" step="1" min="0" max="11" placeholder="мес." style="width: 50%;">
+                        </div>
+                        <div class="hint">Общее правило: ≥12 мес. (минимум 1 год). Исключение: ≥7 лет.</div>
+                    </div>
+                    <div class="input-group">
+                        <label>💰 Среднемесячный заработок (СМЗ, руб.)</label>
+                        <input type="number" id="civil_zarabotok" value="85000" step="1000">
+                        <div class="hint">За последние 12 месяцев службы</div>
+                    </div>
+                </div>
+
+                <div id="civil_insurance_block">
+                    <div class="section-title">📌 Страховая пенсия (для общего правила)</div>
+                    <div class="two-columns">
+                        <div class="input-group">
+                            <label>📌 Страховая пенсия по старости/инвалидности (руб.)</label>
+                            <input type="number" id="civil_strahovaya" value="14500" step="100">
+                            <div class="hint">Уже назначенная страховая пенсия</div>
+                        </div>
+                        <div class="input-group">
+                            <label>📈 Фиксированная выплата (2026 г.)</label>
+                            <input type="number" id="civil_fiks" value="9584.69" step="10">
+                            <div class="hint">9 584,69 руб. (прибавляется к итоговой пенсии)</div>
+                        </div>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="civil_conditions_ok">
+                        <label>✅ Все условия выполнены (достигнут пенсионный возраст, ИПК ≥ 30, страховой стаж ≥ 15 лет)</label>
+                    </div>
+                    <div class="hint" style="margin-top: 8px;">
+                        🔗 <a href="https://www.consultant.ru/document/cons_doc_LAW_48601/3f5a5b9a2b4a6d4c8e9f1a2b3c4d5e6f7a8b9c0d/" target="_blank" style="color: #1e5a7d;">Ст.7 ФЗ №79-ФЗ — основания увольнения для пенсии за выслугу лет</a>
+                    </div>
+                </div>
+
+                <button onclick="calcCivil()">🧮 Рассчитать пенсию за выслугу лет</button>
+
+                <div id="civil_result" class="result">
+                    <div class="result-label">РЕЗУЛЬТАТ РАСЧЁТА</div>
+                    <div class="result-value">— ₽</div>
+                    <div class="result-sub">итого на руки (ПВЛ + страховая пенсия + фиксированная выплата)</div>
+                </div>
+
+                <div class="info-block">
+                    📚 <strong>Нормативная база:</strong> Федеральный закон от 15.12.2001 № 166-ФЗ (ст. 7), Федеральный закон от 27.07.2004 № 79-ФЗ.<br>
+                    🔹 <strong>Формула расчёта:</strong><br>
+                    &nbsp;&nbsp;&nbsp;<strong>ПВЛ</strong> = 45% × СМЗ – Страховая пенсия – Фиксированная выплата<br>
+                    &nbsp;&nbsp;&nbsp;<strong>ИТОГО на руки</strong> = ПВЛ + Страховая пенсия + Фиксированная выплата<br>
+                    🔹 За каждый год стажа ГГС свыше 20 лет процент увеличивается на 3% (максимум 75% от СМЗ).<br>
+                    🔹 При отрицательном значении ПВЛ он принимается равным 0 (доплата не назначается).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================= ВКЛАДКА ВОЕННЫЕ И ПРАВООХРАНИТЕЛИ (ГОДЫ + МЕСЯЦЫ ДЛЯ ВСЕХ ПАРАМЕТРОВ СТАЖА) ======================= -->
+    <div id="militaryTab" class="tab-content">
+        <div class="card">
+            <div class="card-header military">⭐ Военнослужащий / сотрудник правоохранительных органов</div>
+            <div class="card-body">
+                <div class="section-title">⚙️ Основание для назначения пенсии</div>
+                <div class="radio-group" id="milBaseGroup">
+                    <label><input type="radio" name="military_base" value="pure" checked> Основание 1 — чистая выслуга (от 20 лет)</label>
+                    <label><input type="radio" name="military_base" value="mixed"> Основание 2 — смешанный стаж (возраст 45+, выслуга 12.5+, общий стаж 25+)</label>
+                </div>
+
+                <!-- Блок для чистой выслуги (основание 1) - теперь годы + месяцы -->
+                <div id="mil_pure_block">
+                    <div class="section-title">🎖️ Календарная выслуга лет</div>
+                    <div class="input-group">
+                        <label>Выслуга лет (служба)</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="mil_vysluga_years" value="20" step="1" min="0" placeholder="лет" style="width: 50%;">
+                            <input type="number" id="mil_vysluga_months" value="6" step="1" min="0" max="11" placeholder="мес." style="width: 50%;">
+                        </div>
+                        <div class="hint">Минимум 20 лет. Участникам СВО — льготное исчисление (1:2). 1 год = 12 месяцев.</div>
+                    </div>
+                </div>
+
+                <!-- Блок для смешанного стажа (основание 2) - теперь годы + месяцы для всех параметров -->
+                <div id="mil_mixed_block" style="display:none;">
+                    <div class="section-title">📋 Смешанный стаж</div>
+                    <div class="input-group">
+                        <label>🎖️ Выслуга лет на службе</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="mil_vysluga_mixed_years" value="12" step="1" min="0" placeholder="лет" style="width: 50%;">
+                            <input type="number" id="mil_vysluga_mixed_months" value="6" step="1" min="0" max="11" placeholder="мес." style="width: 50%;">
+                        </div>
+                        <div class="hint">Минимум 12 лет 6 месяцев (12,5 лет)</div>
+                    </div>
+                    <div class="input-group">
+                        <label>📋 Общий трудовой стаж</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="mil_total_stazh_years" value="25" step="1" min="0" placeholder="лет" style="width: 50%;">
+                            <input type="number" id="mil_total_stazh_months" value="0" step="1" min="0" max="11" placeholder="мес." style="width: 50%;">
+                        </div>
+                        <div class="hint">Минимум 25 лет (служба + работа + учёба)</div>
+                    </div>
+                    <div class="input-group">
+                        <label>🎂 Возраст</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="number" id="mil_age_years" value="45" step="1" min="0" placeholder="лет" style="width: 50%;">
+                            <input type="number" id="mil_age_months" value="0" step="1" min="0" max="11" placeholder="мес." style="width: 50%;">
+                        </div>
+                        <div class="hint">Минимальный пенсионный возраст — 45 лет</div>
+                    </div>
+                </div>
+
+                <div class="section-title">💰 Денежное довольствие и коэффициенты</div>
+                <div class="two-columns">
+                    <div class="input-group">
+                        <label>Сумма денежного довольствия (СДД, руб.)</label>
+                        <input type="number" id="mil_dd" value="55000" step="1000">
+                        <div class="hint">Оклад по должности + оклад по званию + надбавки</div>
+                    </div>
+                    <div class="input-group">
+                        <label>📉 Понижающий коэффициент (ПК), %</label>
+                        <input type="number" id="mil_pk" value="93.59" step="0.01">
+                        <div class="hint">2026 год — 93,59%</div>
+                    </div>
+                </div>
+
+                <button onclick="calcMilitary()">🧮 Рассчитать военную пенсию</button>
+
+                <div id="mil_result" class="result">
+                    <div class="result-label">ВОЕННАЯ ПЕНСИЯ ЗА ВЫСЛУГУ ЛЕТ</div>
+                    <div class="result-value">— ₽</div>
+                    <div class="result-sub">ежемесячно по Закону РФ № 4468-1</div>
+                </div>
+
+                <div class="info-block">
+                    📚 <strong>Нормативная база:</strong> Закон РФ от 12.02.1993 № 4468-1, Постановление Правительства РФ № 941.<br>
+                    🔹 <strong>Формула 1 (чистая выслуга):</strong> СДД × (50% + 3% за каждый полный год сверх 20 лет, но ≤85%) × ПК.<br>
+                    🔹 <strong>Формула 2 (смешанный стаж):</strong> СДД × (50% + 1% за каждый полный год общего стажа сверх 20 лет, но ≤85%) × ПК.<br>
+                    🔹 Для смешанного стажа необходим возраст не менее 45 лет, выслуга на службе ≥12,5 лет, общий стаж ≥25 лет.
+                </div>
+                <div class="fun-fact">
+                    ⭐ <strong>Участникам СВО:</strong> Федеральный закон от 28.12.2025 № 499-ФЗ: период в добровольческих формированиях засчитывается в выслугу лет на льготных условиях (1 месяц участия в боевых действиях = 2 месяца службы).
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        ⚖️ Калькулятор разработан в рамках ВКР «Проблемы пенсионного обеспечения за выслугу лет в РФ».<br>
+        Результат предварительный. Для официального назначения обратитесь в СФР или кадровую службу.
+    </footer>
+</div>
+
+<script>
+    function switchTab(tab) {
+        const civilTab = document.getElementById('civilTab');
+        const militaryTab = document.getElementById('militaryTab');
+        const btns = document.querySelectorAll('.tab-btn');
+        
+        if (tab === 'civil') {
+            civilTab.classList.add('active');
+            militaryTab.classList.remove('active');
+            btns[0].classList.add('active');
+            btns[1].classList.remove('active');
+        } else {
+            civilTab.classList.remove('active');
+            militaryTab.classList.add('active');
+            btns[0].classList.remove('active');
+            btns[1].classList.add('active');
+        }
+    }
+
+    // Переключение основания для военных
+    const milRadios = document.querySelectorAll('input[name="military_base"]');
+    const pureBlockMil = document.getElementById('mil_pure_block');
+    const mixedBlockMil = document.getElementById('mil_mixed_block');
+    
+    milRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'pure') {
+                pureBlockMil.style.display = 'block';
+                mixedBlockMil.style.display = 'none';
+            } else {
+                pureBlockMil.style.display = 'none';
+                mixedBlockMil.style.display = 'block';
+            }
+            calcMilitary();
+        });
+    });
+
+    // Переключение основания для госслужащих
+    const civilRadios = document.querySelectorAll('input[name="civil_base"]');
+    const insuranceBlock = document.getElementById('civil_insurance_block');
+    
+    civilRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'main') {
+                insuranceBlock.style.display = 'block';
+            } else {
+                insuranceBlock.style.display = 'none';
+            }
+            calcCivil();
+        });
+    });
+    
+    // Инициализация при загрузке
+    window.onload = function() {
+        if (document.querySelector('input[name="civil_base"]:checked').value === 'main') {
+            insuranceBlock.style.display = 'block';
+        } else {
+            insuranceBlock.style.display = 'none';
+        }
+        calcCivil();
+        calcMilitary();
+    };
+
+    // Вспомогательные функции для перевода (годы + месяцы) в десятичные годы
+    function getYearsFromYearsMonths(years, months) {
+        return years + months / 12;
+    }
+
+    function formatYearsMonths(years, months) {
+        if (months === 0) return `${years} лет`;
+        return `${years} лет ${months} мес.`;
+    }
+
+    // Получение стажа федеральной службы в месяцах (для госслужащих)
+    function getFederalMonths() {
+        let years = parseFloat(document.getElementById('civil_fed_years').value) || 0;
+        let months = parseFloat(document.getElementById('civil_fed_months').value) || 0;
+        return years * 12 + months;
+    }
+
+    // Расчёт для ГОСУДАРСТВЕННЫХ СЛУЖАЩИХ
+    function calcCivil() {
+        let stazhGgs = parseFloat(document.getElementById('civil_stazh_ggs').value) || 0;
+        let fedMonths = getFederalMonths();
+        let zar = parseFloat(document.getElementById('civil_zarabotok').value) || 0;
+        
+        const baseType = document.querySelector('input[name="civil_base"]:checked').value;
+        
+        let minStazhGgs = 0;
+        let minFedMonths = 0;
+        let needInsurance = true;
+        let errorMsg = null;
+        
+        if (baseType === 'main') {
+            minStazhGgs = 20;
+            minFedMonths = 12;
+            needInsurance = true;
+            
+            if (stazhGgs < minStazhGgs) {
+                errorMsg = `Стаж ГГС должен быть не менее ${minStazhGgs} лет. Ваш стаж: ${stazhGgs.toFixed(2)} лет.`;
+            } else if (fedMonths < minFedMonths) {
+                errorMsg = `Стаж федеральной службы должен быть не менее ${minFedMonths} мес. (1 год). Ваш стаж: ${fedMonths} мес. (${Math.floor(fedMonths/12)} лет ${fedMonths%12} мес.)`;
+            } else {
+                let conditionsOk = document.getElementById('civil_conditions_ok').checked;
+                if (!conditionsOk) {
+                    errorMsg = `Не выполнены условия для назначения страховой пенсии (пенсионный возраст, ИПК≥30, страховой стаж≥15 лет). Поставьте галочку, если все условия соблюдены.`;
+                }
+            }
+        } 
+        else {
+            minStazhGgs = 25;
+            minFedMonths = 7 * 12;
+            needInsurance = false;
+            
+            if (stazhGgs < minStazhGgs) {
+                errorMsg = `Для исключения требуется стаж ГГС не менее ${minStazhGgs} лет. Ваш стаж: ${stazhGgs.toFixed(2)} лет.`;
+            } else if (fedMonths < minFedMonths) {
+                errorMsg = `Для исключения требуется стаж федеральной службы не менее 7 лет (${minFedMonths} мес.). Ваш стаж: ${fedMonths} мес. (${Math.floor(fedMonths/12)} лет ${fedMonths%12} мес.)`;
+            }
+        }
+        
+        if (errorMsg) {
+            document.getElementById('civil_result').innerHTML = `<div class="result-label">❗ НЕТ ПРАВА НА ПЕНСИЮ</div>
+            <div class="result-value">— ₽</div>
+            <div class="result-sub">${errorMsg}</div>`;
+            return;
+        }
+        
+        let percent = 45;
+        if (stazhGgs > 20) {
+            let over = stazhGgs - 20;
+            percent = Math.min(45 + over * 3, 75);
+        }
+        
+        let pvl = 0;
+        let strahPension = 0;
+        let fiks = 0;
+        
+        if (needInsurance) {
+            strahPension = parseFloat(document.getElementById('civil_strahovaya').value) || 0;
+            fiks = parseFloat(document.getElementById('civil_fiks').value) || 9584.69;
+            pvl = (zar * percent / 100) - strahPension - fiks;
+            if (pvl < 0) pvl = 0;
+            let maxPvl = zar * 0.75;
+            if (pvl > maxPvl) pvl = maxPvl;
+        } else {
+            pvl = zar * percent / 100;
+            let maxPvl = zar * 0.75;
+            if (pvl > maxPvl) pvl = maxPvl;
+        }
+        
+        let totalToPay = pvl + (needInsurance ? strahPension + fiks : 0);
+        let formattedTotal = totalToPay.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        let formattedPvl = pvl.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        let ruleText = (baseType === 'main') ? 'Общее правило (ст.7 ФЗ №79)' : 'Исключение (п.3 ч.1 ст.33 ФЗ №79)';
+        
+        if (needInsurance) {
+            document.getElementById('civil_result').innerHTML = `<div class="result-label">РЕЗУЛЬТАТ РАСЧЁТА</div>
+            <div class="result-value">${formattedTotal} ₽</div>
+            <div class="result-sub">${ruleText} | ПВЛ = ${percent}% от СМЗ = ${formattedPvl} ₽<br>+ страховая пенсия ${strahPension.toLocaleString('ru-RU', {minimumFractionDigits:2})} ₽ + фикс. выплата ${fiks.toLocaleString('ru-RU', {minimumFractionDigits:2})} ₽</div>`;
+        } else {
+            document.getElementById('civil_result').innerHTML = `<div class="result-label">РЕЗУЛЬТАТ РАСЧЁТА</div>
+            <div class="result-value">${formattedTotal} ₽</div>
+            <div class="result-sub">${ruleText} | ПВЛ = ${percent}% от СМЗ = ${formattedPvl} ₽<br>(страховая пенсия не требуется)</div>`;
+        }
+    }
+
+    // Расчёт для ВОЕННЫХ (с годами и месяцами для всех параметров стажа)
+    function calcMilitary() {
+        const baseType = document.querySelector('input[name="military_base"]:checked').value;
+        let dd = parseFloat(document.getElementById('mil_dd').value) || 0;
+        let pk = parseFloat(document.getElementById('mil_pk').value) || 93.59;
+        let percentMil = 0;
+        let reasonText = "";
+        
+        if (baseType === 'pure') {
+            // Чистая выслуга: получаем годы и месяцы
+            let vyslYears = parseFloat(document.getElementById('mil_vysluga_years').value) || 0;
+            let vyslMonths = parseFloat(document.getElementById('mil_vysluga_months').value) || 0;
+            let vyslTotal = getYearsFromYearsMonths(vyslYears, vyslMonths);
+            let vyslFormatted = formatYearsMonths(vyslYears, vyslMonths);
+            
+            if (vyslTotal < 20) {
+                document.getElementById('mil_result').innerHTML = `<div class="result-label">⚠️ НЕ ХВАТАЕТ ВЫСЛУГИ</div>
+                <div class="result-value">— ₽</div>
+                <div class="result-sub">Для основания «чистая выслуга» необходимо не менее 20 лет. Ваша выслуга: ${vyslFormatted} (${vyslTotal.toFixed(2)} лет)</div>`;
+                return;
+            }
+            
+            percentMil = 50;
+            if (vyslTotal > 20) {
+                // Берём только полные годы сверх 20 (целая часть)
+                let fullYearsOver = Math.floor(vyslTotal - 20);
+                percentMil = Math.min(50 + fullYearsOver * 3, 85);
+            }
+            reasonText = `выслуга ${vyslFormatted} (${vyslTotal.toFixed(2)} лет) → ${percentMil.toFixed(2)}% от СДД`;
+        } 
+        else {
+            // Смешанный стаж: все параметры в годах и месяцах
+            let vyslMixedYears = parseFloat(document.getElementById('mil_vysluga_mixed_years').value) || 0;
+            let vyslMixedMonths = parseFloat(document.getElementById('mil_vysluga_mixed_months').value) || 0;
+            let vyslMixedTotal = getYearsFromYearsMonths(vyslMixedYears, vyslMixedMonths);
+            let vyslMixedFormatted = formatYearsMonths(vyslMixedYears, vyslMixedMonths);
+            
+            let totalStazhYears = parseFloat(document.getElementById('mil_total_stazh_years').value) || 0;
+            let totalStazhMonths = parseFloat(document.getElementById('mil_total_stazh_months').value) || 0;
+            let totalStazhTotal = getYearsFromYearsMonths(totalStazhYears, totalStazhMonths);
+            let totalStazhFormatted = formatYearsMonths(totalStazhYears, totalStazhMonths);
+            
+            let ageYears = parseFloat(document.getElementById('mil_age_years').value) || 0;
+            let ageMonths = parseFloat(document.getElementById('mil_age_months').value) || 0;
+            let ageTotal = getYearsFromYearsMonths(ageYears, ageMonths);
+            let ageFormatted = formatYearsMonths(ageYears, ageMonths);
+            
+            let hasRight = true;
+            let errorMsg = "";
+            
+            if (ageTotal < 45) {
+                hasRight = false;
+                errorMsg = `Возраст должен быть не менее 45 лет (ваш: ${ageFormatted})`;
+            } else if (vyslMixedTotal < 12.5) {
+                hasRight = false;
+                errorMsg = `Выслуга на службе должна быть не менее 12 лет 6 месяцев (ваша: ${vyslMixedFormatted})`;
+            } else if (totalStazhTotal < 25) {
+                hasRight = false;
+                errorMsg = `Общий трудовой стаж должен быть не менее 25 лет (ваш: ${totalStazhFormatted})`;
+            }
+            
+            if (!hasRight) {
+                document.getElementById('mil_result').innerHTML = `<div class="result-label">⚠️ ОТСУТСТВУЕТ ПРАВО</div>
+                <div class="result-value">— ₽</div>
+                <div class="result-sub">${errorMsg}</div>`;
+                return;
+            }
+            
+            percentMil = 50;
+            if (totalStazhTotal > 20) {
+                let fullYearsOver = Math.floor(totalStazhTotal - 20);
+                percentMil = Math.min(50 + fullYearsOver * 1, 85);
+            }
+            reasonText = `смешанный стаж (выслуга ${vyslMixedFormatted}, общий ${totalStazhFormatted}, возраст ${ageFormatted}) → ${percentMil.toFixed(2)}% от СДД`;
+        }
+        
+        let rawPens = dd * (percentMil / 100);
+        let finalPens = rawPens * (pk / 100);
+        
+        let formattedFinal = finalPens.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        let formattedRaw = rawPens.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        
+        document.getElementById('mil_result').innerHTML = `<div class="result-label">ВОЕННАЯ ПЕНСИЯ ЗА ВЫСЛУГУ ЛЕТ</div>
+        <div class="result-value">${formattedFinal} ₽</div>
+        <div class="result-sub">${reasonText} × ПК ${pk.toFixed(2)}% = ${formattedRaw} × 0.${String(pk).replace('.', '')}</div>`;
+    }
+</script>
+</body>
+</html>
